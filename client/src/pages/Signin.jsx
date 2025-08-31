@@ -27,7 +27,7 @@ export default function Signin() {
     try {
       setLoading(true);
       const res = await axios.post(
-        "http://localhost:5000/api/auth/signin/request-otp",
+        "https://oauth-8kph.onrender.com/api/auth/signin/request-otp",
         { email }
       );
      const otp = res.data.otp; // now it will have the OTP
@@ -47,7 +47,7 @@ alert(`${res.data.message} ✅\nYour OTP: ${otp}`);
     try {
       setLoading(true);
       const res = await axios.post(
-        "http://localhost:5000/api/auth/signin/verify-otp",
+        "https://oauth-8kph.onrender.com/api/auth/signin/verify-otp",
         { email, otp }
       );
 
@@ -176,7 +176,7 @@ alert(`${res.data.message} ✅\nYour OTP: ${otp}`);
 <button
   type="button"
   onClick={() =>
-    (window.location.href = "http://localhost:5000/api/auth/google")
+    (window.location.href = "https://oauth-8kph.onrender.com/api/auth/google")
   }
   className="w-full flex items-center justify-center gap-2 bg-blue-300 text-white py-2 rounded-lg hover:bg-gray-600 transition"
 >

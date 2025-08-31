@@ -28,7 +28,7 @@ export default function Dashboard() {
   const fetchNotes = async () => {
     try {
       setLoading(true);
-      const res = await axios.get("http://localhost:5000/api/notes", {
+      const res = await axios.get("https://oauth-8kph.onrender.com/api/notes", {
         headers: { Authorization: `Bearer ${token}` },
       });
       setNotes(res.data); // backend returns an array of notes
@@ -52,7 +52,7 @@ export default function Dashboard() {
   const handleCreateNote = async () => {
     try {
       const newNote = { title: "New Note", content: "Write something here..." };
-      const res = await axios.post("http://localhost:5000/api/notes", newNote, {
+      const res = await axios.post("https://oauth-8kph.onrender.com/api/notes", newNote, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setNotes([res.data.note, ...notes]);
@@ -65,7 +65,7 @@ export default function Dashboard() {
   // Delete a note
   const handleDeleteNote = async (id) => {
     try {
-      await axios.delete(`http://localhost:5000/api/notes/${id}`, {
+      await axios.delete(`https://oauth-8kph.onrender.com/api/notes/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setNotes(notes.filter((note) => note._id !== id));

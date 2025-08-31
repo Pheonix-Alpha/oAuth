@@ -29,7 +29,7 @@ export default function SignupPage() {
     try {
       setLoading(true);
       const res = await axios.post(
-        "http://localhost:5000/api/auth/signup/request-otp",
+        "https://oauth-8kph.onrender.com/api/auth/signup/request-otp",
         { name, dob, email }
       );
       const otp = res.data.otp; // get OTP from response
@@ -48,7 +48,7 @@ export default function SignupPage() {
     try {
       setLoading(true);
       const res = await axios.post(
-        "http://localhost:5000/api/auth/signup/verify-otp",
+        "https://oauth-8kph.onrender.com/api/auth/signup/verify-otp",
         { name, dob, email, otp }
       );
 
@@ -217,7 +217,7 @@ export default function SignupPage() {
 <button
   type="button"
   onClick={() =>
-    (window.location.href = "http://localhost:5000/api/auth/google")
+    (window.location.href = "https://oauth-8kph.onrender.com/api/auth/google")
   }
 className="w-full md:w-auto flex items-center justify-center gap-2 bg-red-500 text-white py-2 rounded-lg hover:bg-red-600 transition"
 
