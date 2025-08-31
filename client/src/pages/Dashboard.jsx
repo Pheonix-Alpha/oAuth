@@ -9,36 +9,39 @@ export default function Dashboard() {
   const [notes, setNotes] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  const token = localStorage.getItem("token");
+  
 
-  // Redirect if not logged in
-  useEffect(() => {
-   let currentToken = token;
-    const query = new URLSearchParams(window.location.search);
-    const tokenFromQuery = query.get("token");
-    const nameFromQuery = query.get("name");
-    const emailFromQuery = query.get("email");
+useEffect(() => {
+  const query = new URLSearchParams(window.location.search);
+  const tokenFromQuery = query.get("token");
+  const nameFromQuery = query.get("name");
+  const emailFromQuery = query.get("email");
 
-    // If redirected from Google OAuth, store in localStorage
-    if (tokenFromQuery && nameFromQuery && emailFromQuery) {
-      localStorage.setItem("token", tokenFromQuery);
-      localStorage.setItem("name", nameFromQuery);
-      localStorage.setItem("email", emailFromQuery);
-       currentToken = tokenFromQuery;
+  let token = tokenFromQuery || localStorage.getItem("token");
+    let name = nameFromQuery || localStorage.getItem("name") || "Guest";
+    let email = emailFromQuery || localStorage.getItem("email") || "guest@example.com";
+
+    if (!token) {
+      navigate("/"); // redirect if no token
+      return;
+    }
+
+if (tokenFromQuery && nameFromQuery && emailFromQuery) {
+      localStorage.setItem("token", token);
+      localStorage.setItem("name", name);
+      localStorage.setItem("email", email);
       // Remove query params from URL
       window.history.replaceState({}, document.title, "/dashboard");
     }
-   if (!currentToken) {
-    navigate("/");
-    return;
-  }
 
-  const name = localStorage.getItem("name") || "Guest";
-  const email = localStorage.getItem("email") || "guest@example.com";
-  setUser({ name, email });
+    // 4. Set user state
+    setUser({ name, email });
 
-  fetchNotes(currentToken);
-}, [navigate]);
+    // 5. Fetch notes
+    fetchNotes(token);
+  }, [navigate]);
+
+
 
   // Fetch user's notes
   const fetchNotes = async (authToken) => {

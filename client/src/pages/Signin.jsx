@@ -52,7 +52,9 @@ alert(`${res.data.message} ✅\nYour OTP: ${otp}`);
       );
 
       // ✅ Save token to localStorage
-      localStorage.setItem("token", res.data.token);
+       localStorage.setItem("token", res.data.token);
+    localStorage.setItem("name", res.data.user.name);   // <-- add this
+    localStorage.setItem("email", res.data.user.email);
 
       alert("Signin successful 🚀");
       window.location.href = "/dashboard"; // redirect

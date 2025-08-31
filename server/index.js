@@ -1,12 +1,13 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
+import session from "express-session";
 
 
 dotenv.config();
 import authRoutes from "./routes/auth.js";
 import mongoose from "mongoose";
-import  session  from "express-session";
+
 import "./config/passport.js";
 import passport from "passport";
 
@@ -17,17 +18,32 @@ import router from "./routes/note.js";
 
 
 const app =express();
-app.use(cors({
-  origin: ["http://localhost:5173", "https://oauth-note-app.netlify.app"],
-  credentials: true,
-}));
+app.use(
+  cors({
+    origin: [
+      "http://localhost:5173",
+      "http://localhost:5000",
+      "https://oauth-note-app.netlify.app",
+    ],
+    credentials: true,
+  })
+);
 app.use(express.json());
+
+app.set("trust proxy", 1);
+
+
 
 app.use(
   session({
-    secret: process.env.SESSION_SECRET,  // ✅ use env
+    secret: process.env.SESSION_SECRET,
     resave: false,
-    saveUninitialized: true,
+    saveUninitialized: false,
+    cookie: {
+      secure: process.env.NODE_ENV === "production", // true in production
+      httpOnly: true,
+      sameSite: "none", // required for cross-site cookies
+    },
   })
 );
 
