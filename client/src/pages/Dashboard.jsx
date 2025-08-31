@@ -13,34 +13,51 @@ export default function Dashboard() {
 
   // Redirect if not logged in
   useEffect(() => {
-    if (!token) {
-      navigate("/");
-      return;
-    }
-    const name = localStorage.getItem("name") || "Guest";
-    const email = localStorage.getItem("email") || "guest@example.com";
-    setUser({ name, email });
+   let currentToken = token;
+    const query = new URLSearchParams(window.location.search);
+    const tokenFromQuery = query.get("token");
+    const nameFromQuery = query.get("name");
+    const emailFromQuery = query.get("email");
 
-    fetchNotes();
-  }, [navigate]);
+    // If redirected from Google OAuth, store in localStorage
+    if (tokenFromQuery && nameFromQuery && emailFromQuery) {
+      localStorage.setItem("token", tokenFromQuery);
+      localStorage.setItem("name", nameFromQuery);
+      localStorage.setItem("email", emailFromQuery);
+      token = tokenFromQuery;
+      // Remove query params from URL
+      window.history.replaceState({}, document.title, "/dashboard");
+    }
+   if (!currentToken) {
+    navigate("/");
+    return;
+  }
+
+  const name = localStorage.getItem("name") || "Guest";
+  const email = localStorage.getItem("email") || "guest@example.com";
+  setUser({ name, email });
+
+  fetchNotes(currentToken);
+}, [navigate]);
 
   // Fetch user's notes
-  const fetchNotes = async () => {
-    try {
-      setLoading(true);
-      const res = await axios.get("https://oauth-8kph.onrender.com/api/notes", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setNotes(res.data); // backend returns an array of notes
-    } catch (err) {
-      console.error(err);
-      alert("Failed to fetch notes. Please login again.");
-      localStorage.clear();
-      navigate("/");
-    } finally {
-      setLoading(false);
-    }
-  };
+  const fetchNotes = async (authToken) => {
+  try {
+    setLoading(true);
+    const res = await axios.get("https://oauth-8kph.onrender.com/api/notes", {
+      headers: { Authorization: `Bearer ${authToken}` },
+    });
+    setNotes(res.data);
+  } catch (err) {
+    console.error(err);
+    alert("Failed to fetch notes. Please login again.");
+    localStorage.clear();
+    navigate("/");
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   // Logout
   const handleLogout = () => {
@@ -50,30 +67,36 @@ export default function Dashboard() {
 
   // Create a new note
   const handleCreateNote = async () => {
-    try {
-      const newNote = { title: "New Note", content: "Write something here..." };
-      const res = await axios.post("https://oauth-8kph.onrender.com/api/notes", newNote, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setNotes([res.data.note, ...notes]);
-    } catch (err) {
-      console.error(err);
-      alert("Failed to create note.");
-    }
-  };
+  const authToken = localStorage.getItem("token");
+  try {
+    const newNote = { title: "New Note", content: "Write something here..." };
+    const res = await axios.post(
+      "https://oauth-8kph.onrender.com/api/notes",
+      newNote,
+      { headers: { Authorization: `Bearer ${authToken}` } }
+    );
+    setNotes([res.data.note, ...notes]);
+  } catch (err) {
+    console.error(err);
+    alert("Failed to create note.");
+  }
+};
+
 
   // Delete a note
-  const handleDeleteNote = async (id) => {
-    try {
-      await axios.delete(`https://oauth-8kph.onrender.com/api/notes/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setNotes(notes.filter((note) => note._id !== id));
-    } catch (err) {
-      console.error(err);
-      alert("Failed to delete note.");
-    }
-  };
+ const handleDeleteNote = async (id) => {
+  const authToken = localStorage.getItem("token");
+  try {
+    await axios.delete(`https://oauth-8kph.onrender.com/api/notes/${id}`, {
+      headers: { Authorization: `Bearer ${authToken}` },
+    });
+    setNotes(notes.filter((note) => note._id !== id));
+  } catch (err) {
+    console.error(err);
+    alert("Failed to delete note.");
+  }
+};
+
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
