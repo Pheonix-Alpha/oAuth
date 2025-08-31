@@ -17,7 +17,10 @@ import router from "./routes/note.js";
 
 
 const app =express();
-app.use(cors());
+app.use(cors({
+  origin: ["http://localhost:5173", "https://oauth-note-app.netlify.app"],
+  credentials: true,
+}));
 app.use(express.json());
 
 app.use(

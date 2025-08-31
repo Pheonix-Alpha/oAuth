@@ -24,7 +24,7 @@ export default function Dashboard() {
       localStorage.setItem("token", tokenFromQuery);
       localStorage.setItem("name", nameFromQuery);
       localStorage.setItem("email", emailFromQuery);
-      token = tokenFromQuery;
+       currentToken = tokenFromQuery;
       // Remove query params from URL
       window.history.replaceState({}, document.title, "/dashboard");
     }
