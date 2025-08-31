@@ -178,7 +178,7 @@ alert(`${res.data.message} ✅\nYour OTP: ${otp}`);
 <button
   type="button"
   onClick={() =>
-    (window.location.href = "https://oauth-8kph.onrender.com/api/auth/google")
+    (window.location.href = "https://oauth-8kph.onrender.com/api/auth/google/")
   }
   className="w-full flex items-center justify-center gap-2 bg-blue-300 text-white py-2 rounded-lg hover:bg-gray-600 transition"
 >
