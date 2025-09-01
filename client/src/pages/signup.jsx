@@ -33,7 +33,7 @@ export default function SignupPage() {
         { name, dob, email }
       );
       const otp = res.data.otp; // get OTP from response
-    alert(`${res.data.message} ✅\nYour OTP: ${otp}`);
+      alert(`${res.data.message} ✅\nYour OTP: ${otp}`);
       setShowOtp(true);
     } catch (err) {
       alert(err.response?.data?.msg || "Error sending OTP ❌");
@@ -53,9 +53,9 @@ export default function SignupPage() {
       );
 
       localStorage.setItem("token", res.data.token);
-      localStorage.setItem("name", res.data.user.name);   // <-- add this
-    localStorage.setItem("email", res.data.user.email);
-    
+      localStorage.setItem("name", res.data.user.name); // <-- add this
+      localStorage.setItem("email", res.data.user.email);
+
       alert("Signup successful 🎉");
       window.location.href = "/dashboard";
     } catch (err) {
@@ -77,12 +77,17 @@ export default function SignupPage() {
           />
 
           <div className="px-7 pb-4 md:py-8">
-            <h2 className="text-3xl font-bold mt-4 mb-3 text-center">Sign up</h2>
+            <h2 className="text-3xl font-bold mt-4 mb-3 text-center">
+              Sign up
+            </h2>
             <p className="text-gray-400 mb-3 text-center md:text-left">
               Sign up to enjoy the feature of HD
             </p>
 
-            <form className="space-y-4" onSubmit={showOtp ? handleSignup : handleSendOtp}>
+            <form
+              className="space-y-4"
+              onSubmit={showOtp ? handleSignup : handleSendOtp}
+            >
               {/* Name */}
               <div className="relative">
                 <input
@@ -179,16 +184,16 @@ export default function SignupPage() {
                   >
                     OTP
                   </label>
-                   {/* Resend OTP */}
-    <div className="text-left mt-1">
-      <button
-        type="button"
-        onClick={handleSendOtp}
-        className="text-sm text-blue-600 hover:underline"
-      >
-        Resend OTP
-      </button>
-    </div>
+                  {/* Resend OTP */}
+                  <div className="text-left mt-1">
+                    <button
+                      type="button"
+                      onClick={handleSendOtp}
+                      className="text-sm text-blue-600 hover:underline"
+                    >
+                      Resend OTP
+                    </button>
+                  </div>
                 </div>
               )}
 
@@ -205,33 +210,36 @@ export default function SignupPage() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-blue-500 transition disabled:opacity-50"
+                  className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-500 transition disabled:opacity-50"
                 >
                   {loading ? "Verifying..." : "Sign Up"}
                 </button>
               )}
               <div className="flex items-center my-4">
-  <div className="flex-grow h-px bg-gray-300"></div>
-  <span className="px-2 text-gray-400 text-sm">OR</span>
-  <div className="flex-grow h-px bg-gray-300"></div>
-</div>
+                <div className="flex-grow h-px bg-gray-300"></div>
+                <span className="px-2 text-gray-400 text-sm">OR</span>
+                <div className="flex-grow h-px bg-gray-300"></div>
+              </div>
 
-{/* Google Signup Button */}
-<button
-  type="button"
-  onClick={() =>
-    (window.location.href = "https://oauth-8kph.onrender.com/api/auth/google/")
-  }
-className="w-full md:w-auto flex items-center justify-center gap-2 bg-red-500 text-white py-2 rounded-lg hover:bg-red-600 transition"
-
->
-  <img
-    src="https://www.svgrepo.com/show/355037/google.svg"
-    alt="Google"
-    className="h-5 w-5"
-  />
-  Sign up with Google
-</button>
+              {/* Google Signup Button */}
+              <div className="flex justify-center">
+                <button
+                  type="button"
+                  onClick={() =>
+                    (window.location.href =
+                      "https://oauth-8kph.onrender.com/api/auth/google/")
+                  }
+                  className="w-full   md:w-auto flex items-center justify-center gap-2 bg-red-500 text-white py-2 rounded-lg hover:bg-red-600 transition"
+                >
+                  <img
+                    src="https://www.svgrepo.com/show/355037/google.svg"
+                    alt="Google"
+                    className="h-5 w-5"
+                  />
+                  Sign up with Google
+                </button>
+                </div>
+             
             </form>
 
             {/* Already have an account */}
