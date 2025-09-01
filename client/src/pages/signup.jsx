@@ -53,6 +53,9 @@ export default function SignupPage() {
       );
 
       localStorage.setItem("token", res.data.token);
+      localStorage.setItem("name", res.data.user.name);   // <-- add this
+    localStorage.setItem("email", res.data.user.email);
+    
       alert("Signup successful 🎉");
       window.location.href = "/dashboard";
     } catch (err) {
@@ -202,7 +205,7 @@ export default function SignupPage() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition disabled:opacity-50"
+                  className="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-blue-500 transition disabled:opacity-50"
                 >
                   {loading ? "Verifying..." : "Sign Up"}
                 </button>

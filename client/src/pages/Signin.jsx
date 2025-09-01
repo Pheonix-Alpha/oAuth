@@ -192,7 +192,7 @@ alert(`${res.data.message} ✅\nYour OTP: ${otp}`);
             </form>
              {/* Already have an account */}
             <p className="text-gray-600 text-center mt-6">
-              Nedd an account?{" "}
+              Nead an account?{" "}
               <a href="/signup" className="text-blue-600 font-medium hover:underline">
                 Create one
               </a>

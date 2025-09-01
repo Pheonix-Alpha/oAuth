@@ -7,7 +7,7 @@ const router = express.Router();
 
 router.post("/signup/request-otp", async (req, res) => {
   try {
-    const { name, email } = req.body;
+    const { name, email,dob } = req.body;
 
     if (!email || !name)
       return res.status(400).json({ msg: "Name and Email required" });
@@ -30,11 +30,12 @@ router.post("/signup/request-otp", async (req, res) => {
 
     const otpExpire = Date.now() + 5 * 60 * 1000;
 
-   const newUser = new User({ name, email, otp, otpExpire });
+   const newUser = new User({ name, email,dob, otp, otpExpire });
     await newUser.save();
 
     console.log(`📩 OTP for signup (${email}): ${otp}`);
-    res.json({ message: "OTP sent to email" });
+    res.json({ message: "OTP sent to email", otp });
+
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
