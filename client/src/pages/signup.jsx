@@ -217,7 +217,7 @@ export default function SignupPage() {
 <button
   type="button"
   onClick={() =>
-    (window.location.href = "https://oauth-8kph.onrender.com/api/auth/google")
+    (window.location.href = "https://oauth-8kph.onrender.com/api/auth/google/")
   }
 className="w-full md:w-auto flex items-center justify-center gap-2 bg-red-500 text-white py-2 rounded-lg hover:bg-red-600 transition"
 
