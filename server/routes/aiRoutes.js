@@ -19,7 +19,7 @@ router.post("/summarize", async (req , res) =>{
         }
 
         const response = await openai.chat.completions.create({
-            model: "gpt-4o-mini",
+            model: "gpt-3.5-turbo",
              messages: [
         {
           role: "system",
@@ -30,14 +30,21 @@ router.post("/summarize", async (req , res) =>{
           content: `Summarize this note in 4-5 concise bullet points:\n${text}`,
         },
       ],
+      max_tokens: 150,
         });
 
         const summary = response.choices[0].message.content;
     res.json({ summary });
   } catch (error) {
-    console.error("Error summarizing:", error);
-    res.status(500).json({ error: "Failed to summarize note" });
+  console.error("Error summarizing:", error?.response?.data || error);
+
+  if (error.code === "insufficient_quota" || error.status === 429) {
+    return res.status(429).json({ error: "OpenAI quota exceeded. Please check your plan." });
   }
+
+  res.status(500).json({ error: "Failed to summarize note" });
+}
+
 });
 
 export default router;

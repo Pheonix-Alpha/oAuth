@@ -2,6 +2,8 @@ import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import logo from "../assets/icon.png";
 import axios from "axios";
+import { Share,X } from "lucide-react";
+
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -11,30 +13,28 @@ export default function Dashboard() {
   const [savingNotes, setSavingNotes] = useState({});
   const [selectedNote, setSelectedNote] = useState(null);
   const [summary, setSummary] = useState(""); // stores AI summary
-const [aiLoading, setAiLoading] = useState(false); // loading state
+  const [aiLoading, setAiLoading] = useState(false); // loading state
 
+  const API_URL = import.meta.env.VITE_BACKEND_URL;
 
-const API_URL = import.meta.env.VITE_BACKEND_URL;
+  const openFullNote = (note) => {
+    setSelectedNote(note);
+    setSummary(""); // clear old summary
+  };
 
-const openFullNote = (note) => {
-  setSelectedNote(note);
-  setSummary(""); // clear old summary
-};
+  const closeFullNote = () => setSelectedNote(null);
 
-const closeFullNote = () => setSelectedNote(null);
+  const handleTitleChange = (e) => {
+    const updated = { ...selectedNote, title: e.target.value };
+    setSelectedNote(updated);
+    handleUpdateNote(updated._id, updated);
+  };
 
-const handleTitleChange = (e) => {
-  const updated = { ...selectedNote, title: e.target.value };
-  setSelectedNote(updated);
-  handleUpdateNote(updated._id, updated);
-};
-
-const handleContentChange = (e) => {
-  const updated = { ...selectedNote, content: e.target.value };
-  setSelectedNote(updated);
-  handleUpdateNote(updated._id, updated);
-};
-
+  const handleContentChange = (e) => {
+    const updated = { ...selectedNote, content: e.target.value };
+    setSelectedNote(updated);
+    handleUpdateNote(updated._id, updated);
+  };
 
   // For debouncing updates
   const updateTimeouts = useRef({});
@@ -92,11 +92,9 @@ const handleContentChange = (e) => {
     const authToken = localStorage.getItem("token");
     try {
       const newNote = { title: "New Note", content: "Write something here..." };
-      const res = await axios.post(
-        `${API_URL}/notes`,
-        newNote,
-        { headers: { Authorization: `Bearer ${authToken}` } }
-      );
+      const res = await axios.post(`${API_URL}/notes`, newNote, {
+        headers: { Authorization: `Bearer ${authToken}` },
+      });
       setNotes([res.data.note, ...notes]);
     } catch (err) {
       console.error(err);
@@ -127,11 +125,9 @@ const handleContentChange = (e) => {
     updateTimeouts.current[id] = setTimeout(async () => {
       const authToken = localStorage.getItem("token");
       try {
-        await axios.put(
-          `${API_URL}/notes/${id}`,
-          updatedNote,
-          { headers: { Authorization: `Bearer ${authToken}` } }
-        );
+        await axios.put(`${API_URL}/notes/${id}`, updatedNote, {
+          headers: { Authorization: `Bearer ${authToken}` },
+        });
       } catch (err) {
         console.error(err);
         alert("Failed to update note.");
@@ -143,26 +139,26 @@ const handleContentChange = (e) => {
   };
 
   const handleSummarizeNote = async () => {
- if (!selectedNote?.content) return;
-  setAiLoading(true);
-  try {
-    const authToken = localStorage.getItem("token"); // optional if backend needs auth
-    const res = await axios.post(
-      `${API_URL}/ai/summarize`, // backend AI route
-      { text: selectedNote.content },
-      { headers: { Authorization: `Bearer ${authToken}` } }
-    );
-    setSummary(res.data.summary);
-  } catch (err) {
-    console.error(err);
-    alert("Failed to summarize note");
-  } finally {
-    setAiLoading(false);
-  }
-  }
+    if (!selectedNote?.content) return;
+    setAiLoading(true);
+    try {
+      const authToken = localStorage.getItem("token"); // optional if backend needs auth
+      const res = await axios.post(
+        `${API_URL}/ai/summarize`, // backend AI route
+        { text: selectedNote.content },
+        { headers: { Authorization: `Bearer ${authToken}` } }
+      );
+      setSummary(res.data.summary);
+    } catch (err) {
+      console.error(err);
+      alert("Failed to summarize note");
+    } finally {
+      setAiLoading(false);
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="min-h-screen bg-gray-100 flex flex-col">
       {/* Navbar */}
       <header className="w-full bg-white shadow-md px-6 py-4 flex justify-between items-center">
         <div className="flex items-center space-x-2">
@@ -204,19 +200,53 @@ const handleContentChange = (e) => {
             {notes.map((note) => (
               <div
                 key={note._id}
-                className="bg-white shadow-md rounded-xl p-4 hover:shadow-xl cursor-pointer transition flex flex-col"
-                onClick={() => openFullNote(note)}
+                className="bg-white shadow-md rounded-xl p-4 hover:shadow-xl transition flex flex-col justify-between"
               >
-                <h3 className="font-bold text-gray-800 mb-2">{note.title}</h3>
-                <p className="text-gray-500 text-sm line-clamp-3">
-                  {note.content || "No content yet..."}
-                </p>
+                <div
+                  onClick={() => openFullNote(note)}
+                  className="cursor-pointer flex-1"
+                >
+                <div className="flex items-start justify-between mb-2">
+  <h3 className="font-bold text-gray-800 text-lg pr-2 truncate">{note.title}</h3>
+
+  {/* Share button */}
+
+  <div className="">
+  <button
+    onClick={(e) => {
+      e.stopPropagation(); // Prevent opening full note
+      const textToCopy = `📝 *${note.title}*\n\n${note.content || ""}`;
+      navigator.clipboard
+        .writeText(textToCopy)
+        .then(() => alert("Note copied to clipboard 📋"))
+        .catch(() => alert("Failed to copy ❌"));
+    }}
+    className="bg-gray-100 text-gray-800 px-2 py-1 text-xs rounded-lg hover:bg-gray-300 transition"
+    title="Copy note to clipboard"
+  >
+    <Share size={14} className="text-gray-700" />
+  </button>
+  <button
+   onClick={(e) =>{e.stopPropagation();
+    handleDeleteNote(note._id);} }>
+    <X size={13} className="mx-1" />
+  </button>
+  </div>
+</div>
+
+<p className="text-gray-500 text-sm line-clamp-3">
+  {note.content || "No content yet..."}
+</p>
+
+                </div>
+
+               
               </div>
             ))}
           </div>
         )}
       </main>
-       {/* Full Page Note Modal */}
+      {/* Full Page Note Modal */}
       {selectedNote && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-start z-50 pt-10 overflow-y-auto">
           <div className="bg-white w-full max-w-3xl h-full rounded-xl p-6 relative flex flex-col shadow-lg">
@@ -224,7 +254,7 @@ const handleContentChange = (e) => {
               className="absolute top-4 right-4 text-gray-500 hover:text-gray-800 text-2xl"
               onClick={closeFullNote}
             >
-              ✖
+              <X />
             </button>
             <input
               type="text"
@@ -239,32 +269,33 @@ const handleContentChange = (e) => {
               className="w-full flex-1 border border-gray-300 rounded-lg p-4 focus:outline-none resize-none"
               placeholder="Start writing your note..."
             />
-            <div className="mt-4">
-  <button
-    onClick={handleSummarizeNote}
-    disabled={aiLoading}
-    className="bg-yellow-500 text-white px-4 py-2 rounded-lg hover:bg-yellow-600 transition"
-  >
-    {aiLoading ? "Summarizing..." : "✨ Summarize Note"}
-  </button>
+            <div className="mt-4 flex items-center justify-between">
+              <button
+                onClick={handleSummarizeNote}
+                disabled={aiLoading}
+                className="bg-yellow-500 text-white px-4 py-2 rounded-lg hover:bg-yellow-600 transition"
+              >
+                {aiLoading ? "Summarizing..." : "✨ Summarize Note"}
+              </button>
+              <button
+              onClick={() => handleDeleteNote(selectedNote._id)}
+              className=" self-end bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition"
+            >
+              Delete Note
+            </button>
 
-  {summary && (
-    <div className="mt-4 p-4 bg-gray-100 rounded-lg border border-gray-300">
-      <h4 className="font-semibold mb-2">Summary</h4>
-      <p className="text-gray-700 whitespace-pre-line">{summary}</p>
-    </div>
-  )}
-</div>
+              {summary && (
+                <div className="mt-4 p-4 bg-gray-100 rounded-lg border border-gray-300">
+                  <h4 className="font-semibold mb-2">Summary</h4>
+                  <p className="text-gray-700 whitespace-pre-line">{summary}</p>
+                </div>
+              )}
+            </div>
 
             {savingNotes[selectedNote._id] && (
               <p className="text-xs text-gray-400 italic mt-2">Saving...</p>
             )}
-            <button
-              onClick={() => handleDeleteNote(selectedNote._id)}
-              className="mt-4 self-end bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition"
-            >
-              Delete Note
-            </button>
+            
           </div>
         </div>
       )}
