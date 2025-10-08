@@ -24,7 +24,7 @@ app.use(
     origin: [
       "http://localhost:5173",
       "http://localhost:5000",
-      "https://oauth-note-app.netlify.app",
+      "https://smart-note-making.netlify.app",
     ],
     credentials: true,
   })
