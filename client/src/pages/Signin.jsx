@@ -12,6 +12,8 @@ export default function Signin() {
 
   const otpInputRef = useRef(null);
 
+  const API_URL = import.meta.env.VITE_BACKEND_URL;
+
   useEffect(() => {
     if (showOtp && otpInputRef.current) {
       otpInputRef.current.focus();
@@ -27,7 +29,7 @@ export default function Signin() {
     try {
       setLoading(true);
       const res = await axios.post(
-        "https://oauth-8kph.onrender.com/api/auth/signin/request-otp",
+        `${API_URL}/auth/signin/request-otp`,
         { email }
       );
      const otp = res.data.otp; // now it will have the OTP
@@ -47,7 +49,7 @@ alert(`${res.data.message} ✅\nYour OTP: ${otp}`);
     try {
       setLoading(true);
       const res = await axios.post(
-        "https://oauth-8kph.onrender.com/api/auth/signin/verify-otp",
+        `${API_URL}/auth/signin/verify-otp`,
         { email, otp }
       );
 

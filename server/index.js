@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import session from "express-session";
+import aiRoutes from "./routes/aiRoutes.js";
 
 
 dotenv.config();
@@ -53,6 +54,7 @@ app.use(passport.session());
 app.use("/api/auth", authRoutes);
 app.use("/api", router);
 app.use("/api/auth/google", googleAuth);
+app.use("/api/ai", aiRoutes);
 
 mongoose.connect(process.env.MONGO_URI, {
   useNewUrlParser: true,

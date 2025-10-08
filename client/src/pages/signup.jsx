@@ -2,6 +2,8 @@ import { useState, useRef, useEffect } from "react";
 import axios from "axios";
 import logo from "../assets/logo.png";
 
+
+
 export default function SignupPage() {
   const [showOtp, setShowOtp] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -10,6 +12,8 @@ export default function SignupPage() {
   const [dob, setDob] = useState("");
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
+
+  const API_URL = import.meta.env.VITE_BACKEND_URL;
 
   const otpInputRef = useRef(null);
 
@@ -29,7 +33,7 @@ export default function SignupPage() {
     try {
       setLoading(true);
       const res = await axios.post(
-        "https://oauth-8kph.onrender.com/api/auth/signup/request-otp",
+        `${API_URL}/auth/signup/request-otp`,
         { name, dob, email }
       );
       const otp = res.data.otp; // get OTP from response
@@ -48,12 +52,12 @@ export default function SignupPage() {
     try {
       setLoading(true);
       const res = await axios.post(
-        "https://oauth-8kph.onrender.com/api/auth/signup/verify-otp",
+        `${API_URL}/auth/signup/verify-otp`,
         { name, dob, email, otp }
       );
 
       localStorage.setItem("token", res.data.token);
-      localStorage.setItem("name", res.data.user.name); // <-- add this
+      localStorage.setItem("name", res.data.user.name);
       localStorage.setItem("email", res.data.user.email);
 
       alert("Signup successful 🎉");

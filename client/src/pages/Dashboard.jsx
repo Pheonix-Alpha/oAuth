@@ -9,6 +9,32 @@ export default function Dashboard() {
   const [notes, setNotes] = useState([]);
   const [loading, setLoading] = useState(false);
   const [savingNotes, setSavingNotes] = useState({});
+  const [selectedNote, setSelectedNote] = useState(null);
+  const [summary, setSummary] = useState(""); // stores AI summary
+const [aiLoading, setAiLoading] = useState(false); // loading state
+
+
+const API_URL = import.meta.env.VITE_BACKEND_URL;
+
+const openFullNote = (note) => {
+  setSelectedNote(note);
+  setSummary(""); // clear old summary
+};
+
+const closeFullNote = () => setSelectedNote(null);
+
+const handleTitleChange = (e) => {
+  const updated = { ...selectedNote, title: e.target.value };
+  setSelectedNote(updated);
+  handleUpdateNote(updated._id, updated);
+};
+
+const handleContentChange = (e) => {
+  const updated = { ...selectedNote, content: e.target.value };
+  setSelectedNote(updated);
+  handleUpdateNote(updated._id, updated);
+};
+
 
   // For debouncing updates
   const updateTimeouts = useRef({});
@@ -21,7 +47,8 @@ export default function Dashboard() {
 
     let token = tokenFromQuery || localStorage.getItem("token");
     let name = nameFromQuery || localStorage.getItem("name") || "Guest";
-    let email = emailFromQuery || localStorage.getItem("email") || "guest@example.com";
+    let email =
+      emailFromQuery || localStorage.getItem("email") || "guest@example.com";
 
     if (!token) {
       navigate("/"); // redirect if no token
@@ -42,7 +69,7 @@ export default function Dashboard() {
   const fetchNotes = async (authToken) => {
     try {
       setLoading(true);
-      const res = await axios.get("https://oauth-8kph.onrender.com/api/notes", {
+      const res = await axios.get(`${API_URL}/notes`, {
         headers: { Authorization: `Bearer ${authToken}` },
       });
       setNotes(res.data);
@@ -66,7 +93,7 @@ export default function Dashboard() {
     try {
       const newNote = { title: "New Note", content: "Write something here..." };
       const res = await axios.post(
-        "https://oauth-8kph.onrender.com/api/notes",
+        `${API_URL}/notes`,
         newNote,
         { headers: { Authorization: `Bearer ${authToken}` } }
       );
@@ -80,7 +107,7 @@ export default function Dashboard() {
   const handleDeleteNote = async (id) => {
     const authToken = localStorage.getItem("token");
     try {
-      await axios.delete(`https://oauth-8kph.onrender.com/api/notes/${id}`, {
+      await axios.delete(`${API_URL}/notes/${id}`, {
         headers: { Authorization: `Bearer ${authToken}` },
       });
       setNotes(notes.filter((note) => note._id !== id));
@@ -93,28 +120,46 @@ export default function Dashboard() {
   };
 
   const handleUpdateNote = (id, updatedNote) => {
-   
     if (updateTimeouts.current[id]) clearTimeout(updateTimeouts.current[id]);
 
-  setSavingNotes((prev) => ({ ...prev, [id]: true }));
+    setSavingNotes((prev) => ({ ...prev, [id]: true }));
 
     updateTimeouts.current[id] = setTimeout(async () => {
       const authToken = localStorage.getItem("token");
       try {
         await axios.put(
-          `https://oauth-8kph.onrender.com/api/notes/${id}`,
+          `${API_URL}/notes/${id}`,
           updatedNote,
           { headers: { Authorization: `Bearer ${authToken}` } }
         );
       } catch (err) {
         console.error(err);
         alert("Failed to update note.");
-      }finally {
-      // Remove "saving..." indicator
-      setSavingNotes((prev) => ({ ...prev, [id]: false }));
-    }
+      } finally {
+        // Remove "saving..." indicator
+        setSavingNotes((prev) => ({ ...prev, [id]: false }));
+      }
     }, 500); // wait 500ms after last keystroke
   };
+
+  const handleSummarizeNote = async () => {
+ if (!selectedNote?.content) return;
+  setAiLoading(true);
+  try {
+    const authToken = localStorage.getItem("token"); // optional if backend needs auth
+    const res = await axios.post(
+      `${API_URL}/ai/summarize`, // backend AI route
+      { text: selectedNote.content },
+      { headers: { Authorization: `Bearer ${authToken}` } }
+    );
+    setSummary(res.data.summary);
+  } catch (err) {
+    console.error(err);
+    alert("Failed to summarize note");
+  } finally {
+    setAiLoading(false);
+  }
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -126,7 +171,7 @@ export default function Dashboard() {
         <h1 className="text-xl font-semibold text-gray-800">Dashboard</h1>
         <button
           onClick={handleLogout}
-          className="text-sm text-blue-600 hover:underline"
+          className="text-sm bg-blue-600  border-1 p-1 rounded-xl text-white hover: hover:bg-gray-500"
         >
           Sign out
         </button>
@@ -138,7 +183,6 @@ export default function Dashboard() {
           <h2 className="text-2xl font-bold text-gray-800">
             Welcome, {user.name}! 🎉
           </h2>
-          <p className="text-gray-600 mt-2">Email: {user.email}</p>
         </div>
 
         <div className="mb-6">
@@ -156,48 +200,74 @@ export default function Dashboard() {
         ) : notes.length === 0 ? (
           <p>No notes yet. Click "Create Note" to start.</p>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {notes.map((note, index) => (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {notes.map((note) => (
               <div
                 key={note._id}
-                className="bg-white shadow rounded-xl p-4 hover:shadow-lg transition relative"
+                className="bg-white shadow-md rounded-xl p-4 hover:shadow-xl cursor-pointer transition flex flex-col"
+                onClick={() => openFullNote(note)}
               >
-                <input
-                  type="text"
-                  value={note.title}
-                  onChange={(e) => {
-                    const updatedNotes = [...notes];
-                    updatedNotes[index].title = e.target.value;
-                    setNotes(updatedNotes);
-                    handleUpdateNote(note._id, updatedNotes[index]);
-                  }}
-                  className="font-bold text-lg text-gray-800 w-full border-b border-gray-300 mb-2 focus:outline-none"
-                />
-                <textarea
-                  value={note.content}
-                  onChange={(e) => {
-                    const updatedNotes = [...notes];
-                    updatedNotes[index].content = e.target.value;
-                    setNotes(updatedNotes);
-                    handleUpdateNote(note._id, updatedNotes[index]);
-                  }}
-                  className="text-gray-600 w-full border border-gray-300 rounded p-2 focus:outline-none"
-                />
-                {/* Saving indicator */}
-  {savingNotes[note._id] && (
-    <p className="text-xs text-gray-500 italic">Saving...</p>
-  )}
-                <button
-                  onClick={() => handleDeleteNote(note._id)}
-                  className="absolute top-2 right-2 text-red-600 hover:underline text-sm"
-                >
-                  Delete
-                </button>
+                <h3 className="font-bold text-gray-800 mb-2">{note.title}</h3>
+                <p className="text-gray-500 text-sm line-clamp-3">
+                  {note.content || "No content yet..."}
+                </p>
               </div>
             ))}
           </div>
         )}
       </main>
+       {/* Full Page Note Modal */}
+      {selectedNote && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-start z-50 pt-10 overflow-y-auto">
+          <div className="bg-white w-full max-w-3xl h-full rounded-xl p-6 relative flex flex-col shadow-lg">
+            <button
+              className="absolute top-4 right-4 text-gray-500 hover:text-gray-800 text-2xl"
+              onClick={closeFullNote}
+            >
+              ✖
+            </button>
+            <input
+              type="text"
+              value={selectedNote.title}
+              onChange={handleTitleChange}
+              className="text-2xl font-bold mb-4 w-full border-b border-gray-300 focus:outline-none"
+              placeholder="Note Title"
+            />
+            <textarea
+              value={selectedNote.content}
+              onChange={handleContentChange}
+              className="w-full flex-1 border border-gray-300 rounded-lg p-4 focus:outline-none resize-none"
+              placeholder="Start writing your note..."
+            />
+            <div className="mt-4">
+  <button
+    onClick={handleSummarizeNote}
+    disabled={aiLoading}
+    className="bg-yellow-500 text-white px-4 py-2 rounded-lg hover:bg-yellow-600 transition"
+  >
+    {aiLoading ? "Summarizing..." : "✨ Summarize Note"}
+  </button>
+
+  {summary && (
+    <div className="mt-4 p-4 bg-gray-100 rounded-lg border border-gray-300">
+      <h4 className="font-semibold mb-2">Summary</h4>
+      <p className="text-gray-700 whitespace-pre-line">{summary}</p>
+    </div>
+  )}
+</div>
+
+            {savingNotes[selectedNote._id] && (
+              <p className="text-xs text-gray-400 italic mt-2">Saving...</p>
+            )}
+            <button
+              onClick={() => handleDeleteNote(selectedNote._id)}
+              className="mt-4 self-end bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition"
+            >
+              Delete Note
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
